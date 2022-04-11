@@ -2,23 +2,30 @@ package com.kreitek.editor.commands;
 
 import com.kreitek.editor.*;
 
+import java.util.ArrayList;
+
 public class CommandFactory {
     private static final CommandParser commandParser = new CommandParser();
 
-    public Command getCommand(String commandLine) throws BadCommandException, ExitException {
+
+    public Command getCommand(String commandLine, ArrayList<String> documentLines, CareTaker careTaker) throws BadCommandException, ExitException {
         String[] args = commandParser.parse(commandLine);
         return switch (args[0]) {
             case "a" -> createAppendCommand(args[1]);
             case "u" -> createUpdateCommand(args[1], args[2]);
             case "d" -> createDeleteCommand(args[1]);
-            case "undo" -> createUndoCommand();
+            case "undo" -> createUndoCommand(careTaker);
             default -> throw new ExitException();
         };
+
     }
 
-    private Command createUndoCommand() {
-        // TODO create undo command
-        return null;
+    private Command createUndoCommand(CareTaker careTaker) {
+        Memento memento = careTaker.pop();
+        for (String m: memento.getState()) {
+            System.out.println(m);
+        }
+        return new UndoCommand(memento);
     }
 
     private Command createDeleteCommand(String lineNumber) {
@@ -33,6 +40,10 @@ public class CommandFactory {
 
     private Command createAppendCommand(String text) {
         return new AppendCommand(text);
+    }
+
+    public Memento getState(ArrayList<String> documentLines) {
+        return new Memento(documentLines);
     }
 
 }

@@ -18,15 +18,18 @@ public class ConsoleEditor implements Editor {
 
     private final CommandFactory commandFactory = new CommandFactory();
     private ArrayList<String> documentLines = new ArrayList<String>();
+    public static CareTaker careTaker = new CareTaker();
 
     @Override
     public void run() {
         boolean exit = false;
         while (!exit) {
+
             String commandLine = waitForNewCommand();
             try {
-                Command command = commandFactory.getCommand(commandLine);
+                Command command = commandFactory.getCommand(commandLine, documentLines, careTaker);
                 command.execute(documentLines);
+                careTaker.push(getState(documentLines));
             } catch (BadCommandException e) {
                 printErrorToConsole("Bad command");
             } catch (ExitException e) {
@@ -34,6 +37,8 @@ public class ConsoleEditor implements Editor {
             }
             showDocumentLines(documentLines);
             showHelp();
+
+
         }
     }
 
@@ -64,6 +69,7 @@ public class ConsoleEditor implements Editor {
         printLnToConsole("To add new line -> a \"your text\"");
         printLnToConsole("To update line  -> u [line number] \"your text\"");
         printLnToConsole("To delete line  -> d [line number]");
+        printLnToConsole("To undo last action  -> undo");
     }
 
     private void printErrorToConsole(String message) {
@@ -83,5 +89,15 @@ public class ConsoleEditor implements Editor {
     private void printToConsole(String message) {
         System.out.print(message);
     }
+
+    public Memento getState(ArrayList<String> documentLines) {
+        return new Memento(this.documentLines);
+    }
+
+    public ArrayList<String> addMemento(Memento memento) {
+
+        return new ArrayList<>();
+    }
+
 
 }
